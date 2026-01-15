@@ -1,13 +1,12 @@
 
 [![한국어](https://img.shields.io/badge/한국어-클릭-yellow?style=flat-square)](README.md)
 [![English](https://img.shields.io/badge/English-Click-yellow?style=flat-square)](README-en.md)
-[![release](https://img.shields.io/github/v/release/honey720/chzzk-vod-downloader-v2?style=flat-square)](https://github.com/honey720/chzzk-vod-downloader-v2/releases)
+
+[[release]](https://github.com/honey720/chzzk-vod-downloader-v2/releases)
 
 
 # 치지직 VOD 다운로더 v2
-
-> ⚠ 주인장의 현생 이슈로, 당분간 업데이트를 중단합니다. 프로그램을 이용해주셔서 감사합니다.  
-⚠ Due to the personal reasons of the developer, we are suspending the update for the time being. Thank you for using this program.
+ 
 
 > 치지직 다시보기 동영상, 클립을 다운로드하는 프로그램입니다.
 
@@ -45,8 +44,8 @@
 
 ---
 
-## 📚 참고 자료
-- 본 프로그램은 [chzzk-vod-downloader](https://github.com/24802/chzzk-vod-downloader)를 참고하여 개발되었습니다.
+## 📚 원본 자료
+- 본 프로그램은 [chzzk-vod-downloader-v2](https://github.com/honey720/chzzk-vod-downloader-v2)에서 수정했습니다.
 
 ---
 
@@ -56,5 +55,6 @@
 
 ---
 
-## 💡 문의
-이 프로젝트에 대한 제안 사항이 있거나 문제를 발견하셨다면 [Issue](https://github.com/honey720/chzzk-vod-downloader-v2/issues)에 등록해 주세요.
+## 참고사항
+- 기존의 프로그램은 m3u8 동영상 형식을 다운 받았을 때 스트리밍 형식으로만 재생이 가능하고 편집 프로그램에서 읽지 못하는 fmp4 형식이었습니다. 
+- 따라서 개인적으로 사용하기 쉽게 fmp4 형식 대신 mp4 형식으로 저장하도록 수정하였습니다.

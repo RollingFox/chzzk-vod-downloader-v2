@@ -5,6 +5,8 @@ import os
 import shutil
 import config.config as config
 from urllib.parse import urljoin
+import subprocess
+import imageio_ffmpeg
 
 from PySide6.QtCore import QThread, Signal
 from concurrent.futures import ThreadPoolExecutor
@@ -112,30 +114,94 @@ class DownloadM3U8Thread(QThread):
                 if self.task.state == DownloadState.RUNNING:
                     # (4) 다운로드 완료 후 파일 합치기
                     self.task.item.post_process = True
-                    with open(self.s.output_path, 'wb') as final_f:
+                    
+                    # 1. FFmpeg 실행 파일 경로 가져오기 (라이브러리 자동 감지)
+                    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+
+                    # 2. 윈도우 콘솔 창 숨기기 설정
+                    startupinfo = None
+                    if os.name == 'nt':
+                        startupinfo = subprocess.STARTUPINFO()
+                        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+                    # 3. FFmpeg 명령어 구성 (입력: Pipe, 코덱: Copy, 무브아톰: FastStart)
+                    cmd = [
+                        ffmpeg_exe,
+                        '-y',
+                        '-i', 'pipe:0',             # 표준 입력(stdin)으로 데이터 받기
+                        '-c', 'copy',               # 재인코딩 없이 복사
+                        '-movflags', '+faststart',  # 편집 호환성 최적화
+                        '-f', 'mp4',                # 포맷 명시
+                        self.s.output_path          # 최종 저장 경로
+                    ]
+
+                    # 4. 프로세스 시작 (stdin을 파이프로 개방)
+                    process = subprocess.Popen(
+                        cmd, 
+                        stdin=subprocess.PIPE, 
+                        startupinfo=startupinfo,
+                        stderr=subprocess.DEVNULL # 로그가 너무 많으면 DEVNULL, 디버깅 필요하면 생략
+                    )
+
+                    try:
                         segment_files = sorted(os.listdir(self.temp_dir))
                         for seg_file in segment_files:
-                            # 다운로드 중지 상태라면 중단
-                            if self.task.state == DownloadState.RUNNING:
-                                seg_path = os.path.join(self.temp_dir, seg_file)
-                                with open(seg_path, 'rb') as seg_f:
-                                    while True:
-                                        chunk = seg_f.read(8192)
-                                        if not chunk:
-                                            break
-                                        final_f.write(chunk)
-                                        # 일시정지 상태라면 대기
-                                        if self.task.state == DownloadState.PAUSED:
-                                            self.s._pause_event.wait()
-                                # 세그먼트 파일 합친 후 삭제
-                                self.safe_remove(seg_path)
-                                self.s.merged_segments += 1
-                                
+                            # 사용자 중지 요청 체크
+                            if self.task.state != DownloadState.RUNNING:
+                                break
+
+                            seg_path = os.path.join(self.temp_dir, seg_file)
+                            
+                            # 세그먼트 파일을 읽어서 FFmpeg에 전송
+                            with open(seg_path, 'rb') as seg_f:
+                                while True:
+                                    chunk = seg_f.read(8192)
+                                    if not chunk:
+                                        break
+                                    
+                                    try:
+                                        process.stdin.write(chunk)
+                                    except BrokenPipeError:
+                                        # FFmpeg 프로세스가 예기치 않게 닫힌 경우
+                                        self.logger.log_error("FFmpeg pipe broken unexpectedly.")
+                                        break
+                                    
+                                    # 일시정지 체크
+                                    if self.task.state == DownloadState.PAUSED:
+                                        self.s._pause_event.wait()
+                            
+                            # 전송이 끝난 세그먼트는 즉시 삭제 (용량 절약 핵심)
+                            self.safe_remove(seg_path)
+                            self.s.merged_segments += 1
+
+                    except Exception as e:
+                        self.logger.log_error("Streaming to FFmpeg failed", e)
+                    
+                    finally:
+                        # 데이터 전송 끝, 파이프 닫기
+                        if process.stdin:
+                            try:
+                                process.stdin.close()
+                            except:
+                                pass
+                        # FFmpeg 프로세스 종료 대기
+                        process.wait()
+
+                    # 만약 사용자가 중지해서 루프를 빠져나온 경우, 만들던 파일 삭제
+                    if self.task.state != DownloadState.RUNNING:
+                        if os.path.exists(self.s.output_path):
+                            try:
+                                os.remove(self.s.output_path)
+                            except:
+                                pass
+
+                                            
                     self.s.end_time = tm.time()
                     total_time = self.s.end_time - self.s.start_time
                     self.logger.log_download_complete(total_time)
                     self.logger.save_and_close()
                     self.completed.emit()
+                    
                 
             # (5) 임시 폴더 삭제
             shutil.rmtree(self.temp_dir)

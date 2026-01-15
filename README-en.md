@@ -1,7 +1,8 @@
 
 [![한국어](https://img.shields.io/badge/한국어-클릭-yellow?style=flat-square)](README.md)
 [![English](https://img.shields.io/badge/English-Click-yellow?style=flat-square)](README-en.md)
-[![release](https://img.shields.io/github/v/release/honey720/chzzk-vod-downloader-v2?style=flat-square)](https://github.com/honey720/chzzk-vod-downloader-v2/releases)
+
+[[release]](https://github.com/honey720/chzzk-vod-downloader-v2/releases)
 
 
 # Chzzk VOD Downloader v2
@@ -43,7 +44,7 @@
 ---
 
 ## 📚 References
-- This project was developed with reference to [chzzk-vod-downloader](https://github.com/24802/chzzk-vod-downloader).
+- This project was modified with reference to [chzzk-vod-downloader-v2](https://github.com/honey720/chzzk-vod-downloader-v2).
 
 ---
 
@@ -53,5 +54,6 @@
 
 ---
 
-## 💡 Contact
-If you have suggestions or encounter any issues, please submit them via [Issues](https://github.com/honey720/chzzk-vod-downloader-v2/issues).
+## Notes
+- When the m3u8 video format was downloaded, the existing program was in the fmp4 format, which could only be played in the streaming format and could not be read by the editing program.
+- Therefore, I modified it to save it in mp4 format instead of fmp4 format for easy personal use.
