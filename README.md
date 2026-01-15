@@ -2,7 +2,7 @@
 [![한국어](https://img.shields.io/badge/한국어-클릭-yellow?style=flat-square)](README.md)
 [![English](https://img.shields.io/badge/English-Click-yellow?style=flat-square)](README-en.md)
 
-[[release]](https://github.com/honey720/chzzk-vod-downloader-v2/releases)
+[[release]](https://github.com/RollingFox/chzzk-vod-downloader-v2/releases)
 
 
 # 치지직 VOD 다운로더 v2
